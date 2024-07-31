@@ -113,12 +113,48 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        board.setViewingPerspective(side);
+
+        int size = board.size();
+        for(int c = 0; c < size; c++) {
+            int r = size-1;
+            while (r >= 0){
+                int NextRow = nextNonNullTileRow(c,r);
+                if(NextRow == -1)break;
+                Tile NowTile = board.tile(c,r);
+                Tile NextTile = board.tile(c,NextRow);
+                if(NowTile == null || NowTile.value() == NextTile.value()){
+                    changed = true;
+                    if(board.move(c,r,NextTile)){
+                        score += 2*NextTile.value();
+
+                    }
+                    else{
+                        r+=1;
+                    }
+                }
+                r-=1;
+            }
+
+        }
+
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    // $Find the most top tile isn't null in this row
+    private int nextNonNullTileRow(int col, int row) {
+        for(int i = row - 1; i >= 0; i--) {
+            if(board.tile(col, i) != null){
+                return i;
+            }
+        }
+        return -1;
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -138,6 +174,14 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        // $Return true if any of the tiles in the given board are null
+        // $The explanation of tile() from Board.java 66 line says: "Returns null if there is no tile there."
+        int size = b.size();
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                if(b.tile(i,j) == null) return true;
+            }
+        }
         return false;
     }
 
@@ -148,6 +192,15 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        // $Attention, the tile's value maybe null.
+        int size = b.size();
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                if(b.tile(i,j) == null) continue;
+                int x = b.tile(i,j).value();
+                if(x == MAX_PIECE) return true;
+            }
+        }
         return false;
     }
 
@@ -159,6 +212,25 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        // $Case 1
+        if(emptySpaceExists(b)) return true;
+
+        // $Case 2
+        int size = b.size();
+        for(int i = 0; i < size; i++) { // $Compare the first size-1 Row
+            for(int j = 0; j < size-1; j++) {
+                int x = b.tile(i,j).value();
+                if(x == b.tile(i,j+1).value()) return true;
+            }
+        }
+        for(int i = 0; i < size-1; i++) { // $Compare the first size-1 Col
+            for(int j = 0; j < size; j++) {
+                int x = b.tile(i,j).value();
+                if(x == b.tile(i+1,j).value()) return true;
+            }
+        }
+
+
         return false;
     }
 
