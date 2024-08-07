@@ -3,7 +3,7 @@ package deque;
 import java.util.Iterator;
 
 
-public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private class Node {
         private T value;
         private Node prev;
@@ -44,7 +44,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
 
     public void printDeque() {
         Node tmpNode = nowNode.next;
-        while(tmpNode != nowNode) {
+        while (tmpNode != nowNode) {
             System.out.print(tmpNode.value + " ");
             tmpNode = tmpNode.next;
         }
@@ -54,32 +54,32 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
 
     @Override
     public T removeFirst() {
-        Node FirstNode = nowNode.next;
-        if (FirstNode == nowNode) {
+        Node firstNode = nowNode.next;
+        if (firstNode == nowNode) {
             return null;
         }
-        Node nextFirstNode = FirstNode.next;
-        T item = FirstNode.value;
+        Node nextFirstNode = firstNode.next;
+        T item = firstNode.value;
         nowNode.next = nextFirstNode;
         nextFirstNode.prev = nowNode;
-        FirstNode.prev = null;
-        FirstNode.next = null;
+        firstNode.prev = null;
+        firstNode.next = null;
         size--;
         return item;
     }
 
     @Override
     public T removeLast() {
-        Node LastNode = nowNode.prev;
-        if (LastNode == nowNode){
+        Node lastNode = nowNode.prev;
+        if (lastNode == nowNode) {
             return null;
         }
-        Node preLastNode = LastNode.prev;
-        T item = LastNode.value;
+        Node preLastNode = lastNode.prev;
+        T item = lastNode.value;
         nowNode.prev = preLastNode;
         preLastNode.next = nowNode;
-        LastNode.prev = null;
-        LastNode.next = null;
+        lastNode.prev = null;
+        lastNode.next = null;
         size--;
         return item;
     }
@@ -88,7 +88,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
     public T get(int index) {
         Node cntNode = nowNode.next;
         for (int i = 0; i < size; i++) {
-            if (index == i){
+            if (index == i) {
                 return cntNode.value;
             }
             cntNode = cntNode.next;
@@ -96,19 +96,19 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
         return null;
     }
 
-    private T TargetNodeValue(int index, Node targetNode) { //递归实现寻找index下标的值
+    private T targetNodeValue(int index, Node targetNode) { //递归实现寻找index下标的值
         if (targetNode == nowNode) {
             return null;
         }
         if (index == 0) {
             return targetNode.value;
         }
-        return TargetNodeValue(index - 1, targetNode.next);
+        return targetNodeValue(index - 1, targetNode.next);
 
     }
 
     public T getRecursive(int index) {
-        return TargetNodeValue(index, nowNode.next);
+        return targetNodeValue(index, nowNode.next);
     }
 
     public Iterator<T> iterator() {
@@ -117,7 +117,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
 
     private class LinkedListIterator implements Iterator<T> {
         private Node iter;
-        public LinkedListIterator() {
+        LinkedListIterator() {
             iter = nowNode.next;
         }
 
@@ -152,7 +152,9 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
         for (int i = 0; i < size(); i++) {
             T item = get(i);
             T item2 = tmp.get(i);
-            if (!item.equals(item2)) return false;
+            if (!item.equals(item2)) {
+                return false;
+            }
         }
         return true;
     }

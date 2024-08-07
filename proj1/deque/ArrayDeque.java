@@ -19,11 +19,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
         initIndex(3, 4);
     }
 
-    public int getFirstIndex() {
+    private int getFirstIndex() {
         return (nextFirst + 1) % items.length;
     }
 
-    public int getLastIndex() {
+    private int getLastIndex() {
         return (nextLast - 1 + items.length) % items.length;
     }
 
@@ -91,7 +91,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
 
     @Override
     public void printDeque() {
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             System.out.print(items[i] + " ");
         }
         System.out.println();
@@ -99,7 +99,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
 
     @Override
     public T removeFirst() {
-        if (size == 0) return null;
+        if (size == 0) {
+            return null;
+        }
 
         int index = getFirstIndex();
         T item = items[index];
@@ -112,7 +114,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
 
     @Override
     public T removeLast() {
-        if  (size == 0) return null;
+        if  (size == 0) {
+            return null;
+        }
 
         T item = items[getLastIndex()];
         items[getLastIndex()] = null;
@@ -131,7 +135,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
         return new ArrayDequeIterator();
     }
 
-    public class ArrayDequeIterator implements Iterator<T> {
+    private class ArrayDequeIterator implements Iterator<T> {
         private int pos;
 
         ArrayDequeIterator() {
@@ -151,14 +155,22 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
         }
     }
 
-    public boolean eauals(Object o) {
-        if (o == this) return true;
-        if (o == null) return false;
-        if (!(o instanceof ArrayDeque)) return false;
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof ArrayDeque)) {
+            return false;
+        }
 
         ArrayDeque<T> tmp = (ArrayDeque<T>) o;
         for(int i = 0; i < size; i++) {
-            if (!tmp.get(i).equals(this.get(i))) return false;
+            if (!tmp.get(i).equals(this.get(i))) {
+                return false;
+            }
         }
         return true;
     }
