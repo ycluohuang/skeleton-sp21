@@ -18,6 +18,7 @@ public class AList<Item> {
     private Item[] items;
     private int size;
 
+
     /** Creates an empty list. */
     public AList() {
         items = (Item[]) new Object[100];
