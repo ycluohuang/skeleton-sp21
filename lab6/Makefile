@@ -8,14 +8,14 @@
 #    clean: Remove regeneratable files (such as .class files) produced by
 #           other targets and Emacs backup files.
 #
-# In other words, type 'make' to compile everything; 'make check' to 
+# In other words, type 'make' to compile everything; 'make check' to
 # compile and test everything, and 'make clean' to clean things up.
-# 
+#
 # You can use this file without understanding most of it, of course, but
 # I strongly recommend that you try to figure it out, and where you cannot,
 # that you ask questions.  The Lab Reader contains documentation.
 
-# Name of package containing main procedure 
+# Name of package containing main procedure
 PACKAGE = capers
 
 # The name of the Python 3 program, used in the 'check' target.  If your system

@@ -7,7 +7,7 @@ import static capers.Utils.*;
 
 /** Canine Capers: A Gitlet Prelude.
  * @author TODO
-*/
+ */
 public class Main {
     /**
      * Runs one of three commands:
@@ -41,27 +41,32 @@ public class Main {
         if (args.length == 0) {
             Utils.exitWithError("Must have at least one argument");
         }
-//        System.out.println("args: " + Arrays.toString(args));
+        // System.out.println("args: " + Arrays.toString(args));
 
         CapersRepository.setupPersistence();
         String text;
         switch (args[0]) {
-        case "story":
-            /* This call has been handled for you. The rest will be similar. */
-            validateNumArgs("story", args, 2);
-            text = args[1];
-            CapersRepository.writeStory(text);
-            break;
-        case "dog":
-            validateNumArgs("dog", args, 4);
-            // TODO: make a dog
-            break;
-        case "birthday":
-            validateNumArgs("birthday", args, 2);
-            // TODO: celebrate this dog's birthday
-            break;
-        default:
-            exitWithError(String.format("Unknown command: %s", args[0]));
+            case "story":
+                /* This call has been handled for you. The rest will be similar. */
+                validateNumArgs("story", args, 2);
+                text = args[1];
+                CapersRepository.writeStory(text);
+                break;
+            case "dog":
+                validateNumArgs("dog", args, 4);
+                // TODO: make a dog
+                String dogName = args[1];
+                String dogBreed = args[2];
+                int dogAge = Integer.parseInt(args[3]);
+                CapersRepository.makeDog(dogName, dogBreed, dogAge);
+                break;
+            case "birthday":
+                validateNumArgs("birthday", args, 2);
+                // TODO: celebrate this dog's birthday
+                CapersRepository.celebrateBirthday(args[1]);
+                break;
+            default:
+                exitWithError(String.format("Unknown command: %s", args[0]));
         }
         return;
     }
@@ -77,7 +82,7 @@ public class Main {
     public static void validateNumArgs(String cmd, String[] args, int n) {
         if (args.length != n) {
             throw new RuntimeException(
-                String.format("Invalid number of arguments for: %s.", cmd));
+                    String.format("Invalid number of arguments for: %s.", cmd));
         }
     }
 }
