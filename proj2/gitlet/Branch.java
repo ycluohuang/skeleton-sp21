@@ -7,16 +7,16 @@ import java.util.List;
 
 public class Branch implements Serializable {
     public static final File BRANCH_FILE = Utils.join(Repository.GITLET_DIR, "branches");
-    public String branchName;
-    public String lastCommit;
+    private String branchName;
+    private String lastCommit;
 
-    public Branch(String branchName, String lastCommit) {
-        this.branchName = branchName;
-        this.lastCommit = lastCommit;
+    public Branch(String brName, String lastCmt) {
+        this.branchName = brName;
+        this.lastCommit = lastCmt;
     }
 
-    public void updateLastCommit(String lastCommit) {
-        this.lastCommit = lastCommit;
+    public void updateLastCommit(String Commit) {
+        this.lastCommit = Commit;
     }
 
     public String getLastCommit() {
@@ -31,10 +31,9 @@ public class Branch implements Serializable {
     public static String getCommitId(String filename) {
         // 用fileName来得到提交Id
         File file = Utils.join(BRANCH_FILE, filename);
-        if(file.exists()) {
+        if (file.exists()) {
             return Utils.readContentsAsString(file);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -64,7 +63,7 @@ public class Branch implements Serializable {
 
     public static void remove(String branchName) {
         File file = Utils.join(BRANCH_FILE, branchName);
-        if(!file.isDirectory() && file.exists()) {
+        if (!file.isDirectory() && file.exists()) {
             file.delete();
         }
     }

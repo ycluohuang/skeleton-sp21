@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class StagingArea implements Serializable {
-    public static File CWD = new File(System.getProperty("user.dir"));
+    private static final File CWD = new File(System.getProperty("user.dir"));
     // filename -> blobId
     private TreeMap<String, String> blobMap = new TreeMap<>();
     // filename
@@ -68,8 +68,7 @@ public class StagingArea implements Serializable {
             if (blobMap.containsKey(fileName)) {
                 blobMap.remove(fileName);
             }
-        }
-        else {  // i mess up the else, and put it in the above if, it gets trouble.
+        } else {  // i mess up the else, and put it in the above if, it gets trouble.
             blobMap.put(fileName, blobName);
         }
 
@@ -120,7 +119,7 @@ public class StagingArea implements Serializable {
         }
         for (String file : headCmt.getBlobs().keySet()) {
             if (!allFiles.contains(file) && !removeFile.contains(file)) {
-                if(unstagedFiles.contains(file + " (deleted)")) {
+                if (unstagedFiles.contains(file + " (deleted)")) {
                     unstagedFiles.add(file + " (delete)");
                 }
             }
@@ -130,6 +129,9 @@ public class StagingArea implements Serializable {
         return files;
     }
 
+    /**
+     * @author luohuang
+     */
     public String[] getUntrackedFiles(String head) {
         List<String> untrackedFiles = new ArrayList<>();
         List<String> allFiles = Utils.plainFilenamesIn(CWD);
@@ -138,7 +140,7 @@ public class StagingArea implements Serializable {
             if (!blobMap.containsKey(file)) {
                 if (!headCmt.getBlobs().containsKey(file)) {
                     untrackedFiles.add(file);
-                } else if(removeFile.contains(file)) {
+                } else if (removeFile.contains(file)) {
                     untrackedFiles.add(file);
                 }
             }
@@ -147,6 +149,7 @@ public class StagingArea implements Serializable {
         Arrays.sort(files);
         return files;
     }
+
 }
 
 

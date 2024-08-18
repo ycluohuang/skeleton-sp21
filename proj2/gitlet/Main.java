@@ -11,8 +11,8 @@ public class Main {
      */
     public static void main(String[] args) {
         //  what if args is empty?
-        String firstArg = args[0];
         emptyWarning(args);
+        String firstArg = args[0];
         Repository repo = new Repository();
         switch(firstArg) {
             case "init":
@@ -53,6 +53,7 @@ public class Main {
                 repo.status();
                 break;
             case "checkout":
+                validateNumArgs(args, 2);
                 if (args.length == 2) {
                     // java gitlet.Main checkout [branch name]
                     repo.checkout(args[1]);

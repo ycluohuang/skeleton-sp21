@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.Set;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -40,8 +38,8 @@ public class Repository implements Serializable {
     }
 
     public void init() {
-        if(GITLET_DIR.exists()) { // error in 2024/8/12/3:30 - 4:58
-            Utils.errorPrint("A Gitlet version-control system already exists in the current directory.");
+        if (GITLET_DIR.exists()) { // error in 2024/8/12/3:30 - 4:58
+            errorPrint("A Gitlet version-control system already exists in the current directory.");
         }
         GITLET_DIR.mkdir();
         //create init commit
@@ -229,19 +227,18 @@ public class Repository implements Serializable {
         }
     }
 
-    public void checkOverwritten(Commit cmt, Commit curCmt) {
-        // get CWD files
+    private void checkOverwritten(Commit otherCmt,  Commit curCmt) {
+        // current directory files
         List<String> curDirFiles = Utils.plainFilenamesIn(CWD);
-        // get files in target the newest commit
-        Set<String> cmtFiles = cmt.getBlobs().keySet();
-
+        // other branch's latest files
+        Set<String> cmtFiles = otherCmt.getBlobs().keySet();
         for (String fileName : curDirFiles) {
             if (!curCmt.getBlobs().containsKey(fileName)) {
                 if (cmtFiles.contains(fileName)) {
-                    String fileId = cmt.getBlobs().get(fileName);
-                    if (!fileId.equals(Utils.readContents(new File(fileName)))) {
-                        System.out.println("There is an untracked file in the way;" +
-                                " delete it, or add and commit it first.");
+                    String fileID = otherCmt.getBlobs().get(fileName);
+                    if (!fileID.equals(Utils.readContents(new File(fileName)))) {
+                        System.out.print("There is an untracked file in the way;");
+                        System.out.print(" delete it, or add and commit it first.\n");
                         System.exit(0);
                     }
                 }
@@ -280,7 +277,9 @@ public class Repository implements Serializable {
         stagingArea.write();
     }
 
-
+    /**
+     * @author luohuang
+     */
     public void merge(String branchName) {
         StagingArea stage = new StagingArea();
         Branch otherBr = Branch.read(branchName);
@@ -294,55 +293,100 @@ public class Repository implements Serializable {
         TreeMap<String, String> headBlobs = headCmt.getBlobs();
         TreeMap<String, String> otherBlobs = otherCmt.getBlobs();
         TreeMap<String, String> splitBlobs = splitCmt.getBlobs();
-        boolean confilct = false;
-        for (String fileName : headBlobs.keySet()) {
-            String headBlobId = headBlobs.get(fileName);
-            String otherBlobId = otherBlobs.getOrDefault(fileName, "");
-            String splitBlobId = splitBlobs.getOrDefault(fileName, "");
-
-            if (splitBlobId.equals(headBlobId) ) {
-                if (!otherBlobs.containsKey(fileName)) { // 6
+        boolean conflict = false;
+        for (String file : headBlobs.keySet()) {
+            if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
+                if (!otherBlobs.containsKey(file)) { //6
+                    stage.remove(file, head);
                     continue;
-                } else if (!otherBlobId.equals(headBlobId)) { // 1
-                    checkout(otherBr.getLastCommit(), fileName);
-                    stage.add(fileName, otherBlobId, head);
-                }
-            }
-            if (!otherBlobs.containsKey(fileName) && splitBlobId.isEmpty()) { //4
-                continue;
-            }
-            if (otherBlobs.equals(headBlobs)) {  // 3.1
-                continue;
-            }
-            if (splitBlobId.equals(headBlobId) || splitBlobId.equals(otherBlobId)) {
-                continue; // 3.2
-            } else {
-                confilct = true;
-                dC(stage, headBlobs, otherBlobs, fileName);
-            }
-        }
-
-        for (String fileName : otherBlobs.keySet()) {
-            String otherBlobId = otherBlobs.getOrDefault(fileName, "");
-            String splitBlobId = splitBlobs.getOrDefault(fileName, "");
-            String headBlobId = headBlobs.get(fileName);
-
-            if (splitBlobId.equals(headBlobId)) {
-                if (!headBlobs.containsKey(fileName)) { // 7
-                    continue;
-                } else if (!headBlobId.equals(otherBlobId)) { // 2
+                } else if (!otherBlobs.get(file).equals(headBlobs.get(file))) { //1
+                    checkout(otherBr.getLastCommit(), file);
+                    stage.add(file, otherBlobs.get(file), head);
                     continue;
                 }
             }
-            if (!headBlobs.containsKey(fileName) && splitBlobId.isEmpty()) {
-                checkout(otherBr.getLastCommit(), fileName); // 5
+            if (!otherBlobs.containsKey(file) && !splitBlobs.containsKey(file)) { //4
+                continue;
+            }
+            if (otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { //3.1
+                continue;
+            }
+            String splitID2 = splitBlobs.getOrDefault(file, "");
+            if (!otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { //3.2
+                if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
+                    continue;
+                } else if (splitID2.equals(otherBlobs.getOrDefault(file, ""))) {
+                    continue;
+                } else {
+                    conflict = true;
+                    dC(stage, headBlobs, otherBlobs, file);
+                }
+            }
+        }
+        for (String file : otherBlobs.keySet()) {
+            if (splitBlobs.getOrDefault(file, "").equals(otherBlobs.get(file))) {
+                if (!headBlobs.containsKey(file)) { //7
+                    continue;
+                } else if (!headBlobs.getOrDefault(file, "").equals(otherBlobs.get(file))) { //2
+                    continue;
+                }
+            }
+            if (!headBlobs.containsKey(file) && !splitBlobs.containsKey(file)) { //5
+                checkout(otherBr.getLastCommit(), file);
+                stage.add(file, otherBlobs.get(file), head);
                 continue;
             }
         }
-        if (confilct) {
+        for (String file : headBlobs.keySet()) {
+
+            if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file)) ) {
+                if (!otherBlobs.containsKey(file)) { // 6
+                    stage.remove(file, head);
+                    continue;
+                } else if (!otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { // 1
+                    checkout(otherBr.getLastCommit(), file);
+                    stage.add(file, otherBlobs.getOrDefault(file, ""), head);
+                    continue;
+                }
+            }
+            if (!otherBlobs.containsKey(file) && !splitBlobs.containsKey(file)) { //4
+                continue;
+            }
+            if (otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {  // 3.1
+                continue;
+            }
+            String splitID2 = splitBlobs.getOrDefault(file, "");
+            if (!otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { //3.2
+                if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
+                    continue;
+                } else if (splitID2.equals(otherBlobs.getOrDefault(file, ""))) {
+                    continue;
+                } else {
+                    conflict = true;
+                    dC(stage, headBlobs, otherBlobs, file);
+                }
+            }
+        }
+
+        for (String file : otherBlobs.keySet()) {
+//   if (splitBlobs.getOrDefault(file, "").equals(headBlobs.getOrDefault(file, ""))) bugggg!!!
+            if (splitBlobs.getOrDefault(file, "").equals(otherBlobs.getOrDefault(file, ""))) {
+                if (!headBlobs.containsKey(file)) { // 7
+                    continue;
+                } else if (!headBlobs.getOrDefault(file, "").equals(otherBlobs.get(file))) { // 2
+                    continue;
+                }
+            }
+            if (!headBlobs.containsKey(file) && !splitBlobs.containsKey(file)) {
+                checkout(otherBr.getLastCommit(), file); // 5
+                stage.add(file, otherBlobs.get(file), head);
+                continue;
+            }
+        }
+        if (conflict) {
             System.out.println("Encountered a merge conflict.");
         }
-        String msg = "Merged " + branchName + " into " + branch + ".";
+        String msg = "Merged " + branchName + " into " + this.branch + ".";
         TreeMap<String, String> cmtMap = Commit.mergeBlobs(headCmt, stage);
         Commit cmt = new Commit(msg, head, otherBr.getLastCommit(), cmtMap);
         head = cmt.write();
@@ -353,8 +397,12 @@ public class Repository implements Serializable {
         save();
     }
 
+
+    /**
+     * @author luohuang
+     */
     private void dC(StagingArea stage, TreeMap<String, String> headBlobs, TreeMap<String, String> otherBlobs, String fileName) {
-        byte[] file1 = Blob.getBlobByte(headBlobs.get(fileName));
+        byte[] file1 = Blob.getBlobByte(headBlobs.getOrDefault(fileName, ""));
         String content1 = new String(file1, StandardCharsets.UTF_8);
         String content2;
         if (!otherBlobs.containsKey(fileName)) {
@@ -374,15 +422,18 @@ public class Repository implements Serializable {
         Blob conBlob = new Blob(conFile);
         stage.add(fileName, conBlob.write(), head);
     }
-
+    
+    /**
+     * @author luohuang
+     */
     private String checkFailCases(String branchName, StagingArea stage, Branch otherBr) {
         if (!stage.isEmpty()) {
             errorPrint("You have uncommitted changes.");
         }
-        if (Branch.read(branchName) == null) {
+        if (otherBr == null) {
             errorPrint("A branch with that name does not exist.");
         }
-        if (otherBr == Branch.read(branchName)) {
+        if (branch.equals(branchName)) {
             errorPrint("Cannot merge a branch with itself.");
         }
         String otherLastCmt = otherBr.getLastCommit();
@@ -397,16 +448,20 @@ public class Repository implements Serializable {
         return splitId;
     }
 
+    /**
+     * @author luohuang
+     */
     private String lca(String cmt1, String cmt2) {
         // find the latest common ancestor
-        List<String> cmt1Files = Utils.plainFilenamesIn(cmt1);
-        while (!cmt1.isEmpty()) {
-            cmt1Files.add(cmt1);
+//        List<String> cmt1Files = Utils.plainFilenamesIn(cmt1);  bugggg!!!
+        List<String> cmt1List = new ArrayList<>();
+        while (!cmt1.equals("")) {
+            cmt1List.add(cmt1);
             Commit tmp = Commit.read(cmt1);
             cmt1 = tmp.getParent();
         }
-        while (!cmt2.isEmpty()) {
-            if (cmt1Files.contains(cmt2)) {
+        while (!cmt2.equals("")) {
+            if (cmt1List.contains(cmt2)) {
                 return cmt2;
             }
             Commit tmp = Commit.read(cmt2);

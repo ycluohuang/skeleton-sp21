@@ -24,8 +24,8 @@ public class Commit implements Serializable {
     public static final File COMMITS_DIR = join(Repository.GITLET_DIR, "commits");
     private String message = "initial commit";
     private Date timestamp = new Date();
-    private String firFarther = null;
-    private String secFarther = null;
+    private String firFarther = ""; // this need to be initial
+    private String secFarther = "";
     // fileName -> blobId
     TreeMap<String, String> blobs = new TreeMap<>();
 
@@ -43,10 +43,10 @@ public class Commit implements Serializable {
         this.timestamp.setTime(0);
     }
 
-    public Commit(String message, String firFarther, String secFarther, TreeMap<String, String> cmtMap) {
-        this.message = message;
-        this.firFarther = firFarther;
-        this.secFarther = secFarther;
+    public Commit(String msg, String fa1, String fa2, TreeMap<String, String> cmtMap) {
+        this.message = msg;
+        this.firFarther = fa1;
+        this.secFarther = fa2;
         this.blobs = cmtMap;
         this.timestamp.getTime();
     }
