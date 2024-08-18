@@ -8,7 +8,7 @@ import java.util.*;
 public class StagingArea implements Serializable {
     private static final File CWD = new File(System.getProperty("user.dir"));
     // filename -> blobId
-    private TreeMap<String, String> blobMap = new TreeMap<>();
+    private Map<String, String> blobMap = new java.util.HashMap<>();
     // filename
     private HashSet<String> removeFile = new HashSet<>();
 
@@ -31,7 +31,7 @@ public class StagingArea implements Serializable {
         return Utils.readObject(STAGE_FILE, StagingArea.class);
     }
 
-    public TreeMap<String, String> getBlobMap() {
+    public Map<String, String> getBlobMap() {
         return blobMap;
     }
 
@@ -45,7 +45,7 @@ public class StagingArea implements Serializable {
     }
 
     public void clear() {
-        blobMap = new java.util.TreeMap<>();
+        blobMap = new java.util.HashMap<>();
         removeFile = new HashSet<>();
         this.write();
     }
@@ -56,7 +56,7 @@ public class StagingArea implements Serializable {
 
     public void add(String fileName, String blobName, String head) { // blobName is hash
         Commit headCmt = Commit.read(head); // return the content of head file
-        TreeMap<String, String> oldBlobs = headCmt.getBlobs();
+        Map<String, String> oldBlobs = headCmt.getBlobs();
         if (oldBlobs == null) {
             System.out.println("Stage add warning!");
             System.exit(0);

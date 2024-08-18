@@ -27,7 +27,7 @@ public class Commit implements Serializable {
     private String firFarther = ""; // this need to be initial
     private String secFarther = "";
     // fileName -> blobId
-    TreeMap<String, String> blobs = new TreeMap<>();
+    Map<String, String> blobs = new HashMap<>();
 
     public Commit() {
         message = "initial commit";
@@ -43,7 +43,7 @@ public class Commit implements Serializable {
         this.timestamp.setTime(0);
     }
 
-    public Commit(String msg, String fa1, String fa2, TreeMap<String, String> cmtMap) {
+    public Commit(String msg, String fa1, String fa2, Map<String, String> cmtMap) {
         this.message = msg;
         this.firFarther = fa1;
         this.secFarther = fa2;
@@ -80,7 +80,7 @@ public class Commit implements Serializable {
         return firFarther;
     }
 
-    public TreeMap<String, String> getBlobs() {
+    public Map<String, String> getBlobs() {
         return blobs;
     }
 
@@ -126,8 +126,8 @@ public class Commit implements Serializable {
     /** Merge blobs
      * @author luohuang
      */
-    public static TreeMap<String, String> mergeBlobs(Commit curCommit, StagingArea curStage) {
-        TreeMap<String, String> cmtBlobs = curCommit.getBlobs();
+    public static Map<String, String> mergeBlobs(Commit curCommit, StagingArea curStage) {
+        Map<String, String> cmtBlobs = curCommit.getBlobs();
         // delete existed file in RemoveFile(Staging area)
         for (String fileName : curStage.getRemoveFile()) {
             cmtBlobs.remove(fileName);

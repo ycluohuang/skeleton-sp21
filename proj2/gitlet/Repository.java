@@ -78,7 +78,7 @@ public class Repository implements Serializable {
         if (stagingArea.isEmpty()) {
             errorPrint("No changes added to the commit.");
         }
-        TreeMap<String, String> cmtBlobs = Commit.mergeBlobs(oldCmt, stagingArea);
+        Map<String, String> cmtBlobs = Commit.mergeBlobs(oldCmt, stagingArea);
         Commit newCommit = new Commit(msg, head, "", cmtBlobs);
         head = newCommit.write();
         stagingArea.clear();
@@ -290,56 +290,13 @@ public class Repository implements Serializable {
         Commit headCmt = Commit.read(head);
         checkOverwritten(otherCmt, headCmt);
 
-        TreeMap<String, String> headBlobs = headCmt.getBlobs();
-        TreeMap<String, String> otherBlobs = otherCmt.getBlobs();
-        TreeMap<String, String> splitBlobs = splitCmt.getBlobs();
+        Map<String, String> headBlobs = headCmt.getBlobs();
+        Map<String, String> otherBlobs = otherCmt.getBlobs();
+        Map<String, String> splitBlobs = splitCmt.getBlobs();
         boolean conflict = false;
         for (String file : headBlobs.keySet()) {
-            if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
-                if (!otherBlobs.containsKey(file)) { //6
-                    stage.remove(file, head);
-                    continue;
-                } else if (!otherBlobs.get(file).equals(headBlobs.get(file))) { //1
-                    checkout(otherBr.getLastCommit(), file);
-                    stage.add(file, otherBlobs.get(file), head);
-                    continue;
-                }
-            }
-            if (!otherBlobs.containsKey(file) && !splitBlobs.containsKey(file)) { //4
-                continue;
-            }
-            if (otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { //3.1
-                continue;
-            }
-            String splitID2 = splitBlobs.getOrDefault(file, "");
-            if (!otherBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) { //3.2
-                if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
-                    continue;
-                } else if (splitID2.equals(otherBlobs.getOrDefault(file, ""))) {
-                    continue;
-                } else {
-                    conflict = true;
-                    dC(stage, headBlobs, otherBlobs, file);
-                }
-            }
-        }
-        for (String file : otherBlobs.keySet()) {
-            if (splitBlobs.getOrDefault(file, "").equals(otherBlobs.get(file))) {
-                if (!headBlobs.containsKey(file)) { //7
-                    continue;
-                } else if (!headBlobs.getOrDefault(file, "").equals(otherBlobs.get(file))) { //2
-                    continue;
-                }
-            }
-            if (!headBlobs.containsKey(file) && !splitBlobs.containsKey(file)) { //5
-                checkout(otherBr.getLastCommit(), file);
-                stage.add(file, otherBlobs.get(file), head);
-                continue;
-            }
-        }
-        for (String file : headBlobs.keySet()) {
 
-            if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file)) ) {
+            if (splitBlobs.getOrDefault(file, "").equals(headBlobs.get(file))) {
                 if (!otherBlobs.containsKey(file)) { // 6
                     stage.remove(file, head);
                     continue;
@@ -387,7 +344,7 @@ public class Repository implements Serializable {
             System.out.println("Encountered a merge conflict.");
         }
         String msg = "Merged " + branchName + " into " + this.branch + ".";
-        TreeMap<String, String> cmtMap = Commit.mergeBlobs(headCmt, stage);
+        Map<String, String> cmtMap = Commit.mergeBlobs(headCmt, stage);
         Commit cmt = new Commit(msg, head, otherBr.getLastCommit(), cmtMap);
         head = cmt.write();
         stage.clear();
@@ -401,15 +358,15 @@ public class Repository implements Serializable {
     /**
      * @author luohuang
      */
-    private void dC(StagingArea stage, TreeMap<String, String> headBlobs, TreeMap<String, String> otherBlobs, String fileName) {
-        byte[] file1 = Blob.getBlobByte(headBlobs.getOrDefault(fileName, ""));
-        String content1 = new String(file1, StandardCharsets.UTF_8);
+    private void dC(StagingArea st, Map<String, String> hB, Map<String, String> oB, String f) {
+        byte[] f1 = Blob.getBlobByte(hB.getOrDefault(f, ""));
+        String content1 = new String(f1, StandardCharsets.UTF_8);
         String content2;
-        if (!otherBlobs.containsKey(fileName)) {
+        if (!oB.containsKey(f)) {
             content2 = "";
         } else {
-            byte[] file2 = Blob.getBlobByte(otherBlobs.get(fileName));
-            content2 = new String(file2, StandardCharsets.UTF_8);
+            byte[] f2 = Blob.getBlobByte(oB.get(f));
+            content2 = new String(f2, StandardCharsets.UTF_8);
         }
         StringBuilder sb = new StringBuilder();
         sb.append("<<<<<<< HEAD\n");
@@ -417,10 +374,10 @@ public class Repository implements Serializable {
         sb.append("=======\n");
         sb.append(content2);
         sb.append(">>>>>>>\n");
-        File conFile = new File(fileName);
+        File conFile = new File(f);
         Utils.writeContents(conFile, sb.toString());
         Blob conBlob = new Blob(conFile);
-        stage.add(fileName, conBlob.write(), head);
+        st.add(f, conBlob.write(), head);
     }
     
     /**

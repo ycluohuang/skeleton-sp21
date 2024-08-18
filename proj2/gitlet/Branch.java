@@ -15,8 +15,8 @@ public class Branch implements Serializable {
         this.lastCommit = lastCmt;
     }
 
-    public void updateLastCommit(String Commit) {
-        this.lastCommit = Commit;
+    public void updateLastCommit(String cmt) {
+        this.lastCommit = cmt;
     }
 
     public String getLastCommit() {
