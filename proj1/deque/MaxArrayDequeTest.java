@@ -7,11 +7,10 @@ import java.util.Comparator;
 import static org.junit.Assert.*;
 
 class MyComparator implements Comparator<String> {
-    public int compare(String a, String b)
-    {
-        if(a.compareTo(b)>0)
+    public int compare(String a, String b) {
+        if (a.compareTo(b) > 0)
             return 1;
-        else if(a.compareTo(b)<0)
+        else if(a.compareTo(b) < 0)
             return -1;
         else
             return 0;

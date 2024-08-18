@@ -85,7 +85,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
         return size;
     }
 
-    public boolean isEmpty() {
+    private boolean isEmpty() {
         return size == 0;
     }
 
@@ -128,7 +128,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
 
     @Override
     public T get(int index) {
-        return items[(nextFirst + 1 + index) % items.length] ;
+        return items[(nextFirst + 1 + index) % items.length];
     }
 
     public Iterator<T> iterator() {
@@ -167,7 +167,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>  {
         }
 
         ArrayDeque<T> tmp = (ArrayDeque<T>) o;
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             if (!tmp.get(i).equals(this.get(i))) {
                 return false;
             }

@@ -18,14 +18,12 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-
         T maxValue = get(0);
         for (int i = 0; i < size(); i++) {
             if (comparator.compare(get(i), maxValue) > 0) {
                 maxValue = get(i);
             }
         }
-
         return maxValue;
     }
 }
